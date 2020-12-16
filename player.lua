@@ -1,3 +1,4 @@
+local Trail = require 'trail'
 local Object = require 'base-class'
 local Player = Object:extend()
 
@@ -16,6 +17,8 @@ function Player.set(P, x, y, w, h)
 	P.accel = 0
 	P.dir = 1
 	P:computeAcceleration()
+	local spot = love.graphics.newImage('assets/particle.png')
+	P.trail = Trail(spot, 1.8, {0.75, 0.25, 0.95})
 end
 
 function Player.size(P)
@@ -130,6 +133,7 @@ function Player.computeAcceleration(P)
 end
 
 function Player.update(P, dt, dir)
+	P.trail:update(dt, P:center())
 	if dir == 0 then
 		P.speed = 0
 		local short, long = P:limits()
@@ -161,6 +165,8 @@ function Player.draw(P)
 	love.graphics.rectangle('line', r[3], r[4], r[1]-r[3], r[2]-r[4])
 	love.graphics.setLineWidth(4)
 	love.graphics.line(P:side(P.dir))
+
+	P.trail:draw()
 end
 
 return Player
