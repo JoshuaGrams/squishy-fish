@@ -12,11 +12,26 @@ function love.load()
 	))
 end
 
+function drawSpell(S, x, y, size, pad)
+	if S then
+		local r = size/2
+		love.graphics.setColor(0.8, 0.7, 0.3)
+		love.graphics.circle('fill', x+r, y+r, r)
+		love.graphics.setColor(0.2, 0.2, 0.2)
+		S:draw(x+r, y+r, math.sqrt(2)*r - 2*pad)
+	end
+end
+
 function love.draw()
 	local w, h = love.graphics.getDimensions()
 	love.graphics.setColor(0.5, 1, 0.9)
 	love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, w - 20, 'center')
 	player:draw()
+
+	love.graphics.setLineWidth(3)
+	for i,spell in ipairs(player.hand) do
+		drawSpell(spell, 10 + (i-1)*55, 10, 50, 3)
+	end
 end
 
 function love.update(dt)
