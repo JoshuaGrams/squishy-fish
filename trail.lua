@@ -15,6 +15,10 @@ function Trail.set(self, image, decay, color)
 	self.t = 0
 end
 
+function Trail.clear(self)
+	self.particles = {}
+end
+
 function Trail.add(self, x, y)
 	self.t = 0
 	x = x + self.j * (2*math.random() - 1)

@@ -3,7 +3,7 @@ local Object = require 'base-class'
 local Player = Object:extend()
 
 local sqrt = math.sqrt
-local abs, floor = math.abs, math.floor
+local abs, floor, ceil = math.abs, math.floor, math.ceil
 local min, max = math.min, math.max
 local function clamp(x, lo, hi) return max(lo, min(x, hi)) end
 
@@ -13,9 +13,11 @@ function Player.set(P, x, y, w, h)
 	w, h = P:size()
 	P.r = {x+w, y+h, x, y}  -- clockwise: right, bottom, left, top
 	P.speed, P.maxSpeed = 0, 800
-	P.tAccel, P.tDecay = 0.175, 0.8
+	P.tAccel, P.tDecay = 0.15, 0.8
 	P.accel = 0
 	P.dir = 1
+	P.hand, P.deck = {}, {}
+	P.spell = {}
 	P:computeAcceleration()
 	local spot = love.graphics.newImage('assets/particle.png')
 	P.trail = Trail(spot, 1.8, {0.75, 0.25, 0.95})
@@ -100,13 +102,6 @@ function Player.turnTo(P, dir)
 	P.speed = 0
 end
 
-function Player.computeSpeed(P)
-	local length = P:length()
-	local _, long = P:limits()
-	local square = sqrt(P.area)
-	P.speed = max(0, P.maxSpeed * (length - square) / (long - square))
-end
-
 function Player.decayShape(P, dt, dir)
 	local length = P:length()
 	local _, long = P:limits()
@@ -118,11 +113,9 @@ function Player.decayShape(P, dt, dir)
 	end
 end
 
-function Player.computeDeceleration(P)
-	P.decel = P.maxSpeed/P.tDecay
-end
-
 function Player.computeAcceleration(P)
+	local x, y = P:center()
+	table.insert(P.spell, { dir = P.dir, x = x, y = y })
 	local length = P:length()
 	local short, long = P:limits()
 	local square = sqrt(P.area)
@@ -132,6 +125,63 @@ function Player.computeAcceleration(P)
 	P.accel = k * dv/P.tAccel
 end
 
+local turns = { F = 0, R = 1, B = 2, L = 3 }
+
+function spellArgs(shape, spell)
+	local spellLength = ceil(#spell/2)
+	if #shape ~= spellLength then return false end
+	local args = {}
+	for i,seg in ipairs(shape) do
+		local turn, key = turns[spell[2*i-2]], spell[2*i-1]
+		if i == 1 then
+			args.dir = seg.turn
+		elseif seg.turn ~= turn then
+			return false
+		end
+		args[key] = max(args[key] or 0, seg.length)
+	end
+	return args
+end
+
+function Player.inHand(P, shape)
+	for i,spell in ipairs(P.hand) do
+		local args = spellArgs(shape, spell)
+		if args then
+			table.remove(P.hand, i)
+			return { spell = spell, args = args }
+		end
+	end
+	return false
+end
+
+function Player.cast(P, invocation)
+	invocation.spell.fn(invocation.args)
+end
+
+function Player.maybeCast(P, x, y)
+	if #P.spell < 1 then return end
+	local shape = { finish = {x, y} }
+	local spellDir = false
+	for i,p in ipairs(P.spell) do
+		local turn
+		if not spellDir then
+			spellDir, turn = p.dir, p.dir
+		else
+			turn = (p.dir - spellDir) % 4
+		end
+		local n = P.spell[i+1] or {x=x, y=y}
+		table.insert(shape, {
+			turn = turn,
+			length = floor(abs((n.x - p.x) + (n.y - p.y))),
+			p = {p.x, p.y}
+		})
+	end
+	P.spell = {}
+	P.trail:clear()
+	local invocation = P:inHand(shape)
+	if invocation then P:cast(invocation) end
+end
+
 function Player.update(P, dt, dir)
 	P.trail:update(dt, P:center())
 	if dir == 0 then
@@ -139,6 +189,7 @@ function Player.update(P, dt, dir)
 		local short, long = P:limits()
 		local square = sqrt(P.area)
 		P:stretch(-(long - square)/P.tAccel * dt)
+		P:maybeCast(P:center())
 	elseif type(dir) == 'number' and dir ~= P.ignoreDir then
 		if dir ~= P.dir then P:turnTo(dir) end
 		if dir ~= P.lastDir then
@@ -153,6 +204,10 @@ function Player.update(P, dt, dir)
 		P:move(P.speed * dt)
 		P:decayShape(dt, dir)
 		P.speed = max(0, P.speed - (P.maxSpeed/P.tDecay) * dt)
+		if P.speed == 0 then
+			P.spell = {}
+			P.trail:clear()
+		end
 	end
 
 	if not dir then P.lastDir, P.ignoreDir = false, false end
@@ -167,6 +222,11 @@ function Player.draw(P)
 	love.graphics.line(P:side(P.dir))
 
 	P.trail:draw()
+
+	if P.spellShape then
+		love.graphics.setColor(1, 1, 1)
+		love.graphics.line(P.spellShape)
+	end
 end
 
 return Player
