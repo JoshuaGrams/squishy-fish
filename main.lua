@@ -1,13 +1,15 @@
 local Player = require 'player'
+local Spell = require 'spell'
 
 function love.load()
 	font = love.graphics.newFont('assets/Lora-Regular.ttf', 24)
 	header = love.graphics.newFont('assets/Lora-Regular.ttf', 48)
 	love.graphics.setFont(header)
 	player = Player(50, 50, 135, 18)
-	table.insert(player.hand, { 'l', 'R', 'w', 'L', 'w', fn = function(args)
-		print('FRL', args.l, args.w)
-	end})
+	table.insert(player.hand, Spell(
+		{'l', 'R', 'w', 'L', 'w'},
+		function(S, args) print('FRL', args.l, args.w) end
+	))
 end
 
 function love.draw()

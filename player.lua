@@ -18,7 +18,7 @@ function Player.set(P, x, y, w, h)
 	P.accel = 0
 	P.dir = 1
 	P.hand, P.deck, P.discards = { size = 3 }, {}, {}
-	P.spell = {}
+	P.path = {}
 	local spot = love.graphics.newImage('assets/particle.png')
 	P.trail = Trail(spot, 1.8, {0.75, 0.25, 0.95})
 end
@@ -115,7 +115,7 @@ end
 
 function Player.computeAcceleration(P)
 	local x, y = P:center()
-	table.insert(P.spell, { dir = P.dir, x = x, y = y })
+	table.insert(P.path, { dir = P.dir, x = x, y = y })
 	local length = P:length()
 	local short, long = P:limits()
 	local square = sqrt(P.area)
@@ -164,44 +164,40 @@ local function shuffle(t)
 	return t
 end
 
-function Player.inHand(P, shape)
+function Player.inHand(P, path)
 	for i,spell in ipairs(P.hand) do
-		local args = spellArgs(shape, spell)
+		local args = spell:match(path)
 		if args then
 			P:discard(i)
 			P:fillHand()
-			return { spell = spell, args = args }
+			return spell, args
 		end
 	end
 	return false
 end
 
-function Player.cast(P, invocation)
-	invocation.spell.fn(invocation.args)
-end
-
 function Player.maybeCast(P, x, y)
-	if #P.spell < 1 then return end
-	local shape = { finish = {x, y} }
+	if #P.path < 1 then return end
+	local path = { finish = {x, y} }
 	local spellDir = false
-	for i,p in ipairs(P.spell) do
+	for i,p in ipairs(P.path) do
 		local turn
 		if not spellDir then
 			spellDir, turn = p.dir, p.dir
 		else
 			turn = (p.dir - spellDir) % 4
 		end
-		local n = P.spell[i+1] or {x=x, y=y}
-		table.insert(shape, {
+		local n = P.path[i+1] or {x=x, y=y}
+		table.insert(path, {
 			turn = turn,
 			length = floor(abs((n.x - p.x) + (n.y - p.y))),
 			p = {p.x, p.y}
 		})
 	end
-	P.stopped, P.spell = nil, {}
-	local invocation = P:inHand(shape)
-	if invocation then
-		P:cast(invocation)
+	P.stopped, P.path = nil, {}
+	local spell, args = P:inHand(path)
+	if spell then
+		spell:cast(args)
 		P.trail:flash()
 	else
 		P.trail:clear()
@@ -217,7 +213,7 @@ function Player.update(P, dt, dir)
 	end
 	-- Coasted to a halt, wait to clear spell.
 	if cooldown(P, 'stopped', dt) then
-		P.spell = {}
+		P.path = {}
 		P.trail:clear()
 	end
 	-- Particle trail.
