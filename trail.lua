@@ -1,3 +1,4 @@
+local cooldown = require 'cooldown'
 local Object = require 'base-class'
 
 local Trail = Object:extend()
@@ -32,7 +33,16 @@ local function distance2(ax, ay, bx, by)
 	return dx*dx + dy*dy
 end
 
+function Trail.flash(self)
+	self.tFlash = 0.2
+	self.normalColor = self.color
+	self.color = {1, 1, 1}
+end
+
 function Trail.update(self, dt, x, y)
+	if cooldown(self, 'tFlash', dt) then
+		self.color = self.normalColor
+	end
 	self.t = self.t + dt
 	local P, d = self.particles, 0
 	for i=1,#P do

@@ -1,3 +1,4 @@
+local cooldown = require 'cooldown'
 local Trail = require 'trail'
 local Object = require 'base-class'
 local Player = Object:extend()
@@ -16,9 +17,8 @@ function Player.set(P, x, y, w, h)
 	P.tAccel, P.tDecay = 0.15, 0.8
 	P.accel = 0
 	P.dir = 1
-	P.hand, P.deck = {}, {}
+	P.hand, P.deck, P.discards = { size = 3 }, {}, {}
 	P.spell = {}
-	P:computeAcceleration()
 	local spot = love.graphics.newImage('assets/particle.png')
 	P.trail = Trail(spot, 1.8, {0.75, 0.25, 0.95})
 end
@@ -143,11 +143,33 @@ function spellArgs(shape, spell)
 	return args
 end
 
+function Player.discard(P, i)
+	table.insert(P.discards, table.remove(P.hand, i))
+end
+
+function Player.fillHand(P)
+	while #P.deck > 0 and #P.hand < P.hand.size do
+		table.insert(P.hand, table.remove(P.deck))
+	end
+	if #P.hand == 0 then P.shuffleDelay = 2 end
+end
+
+local function shuffle(t)
+	local i = #t
+	while i > 1 do
+		i = i - 1
+		local j = floor(Math.random(i))
+		t[i], t[j] = t[j], t[i]
+	end
+	return t
+end
+
 function Player.inHand(P, shape)
 	for i,spell in ipairs(P.hand) do
 		local args = spellArgs(shape, spell)
 		if args then
-			table.remove(P.hand, i)
+			P:discard(i)
+			P:fillHand()
 			return { spell = spell, args = args }
 		end
 	end
@@ -176,14 +198,32 @@ function Player.maybeCast(P, x, y)
 			p = {p.x, p.y}
 		})
 	end
-	P.spell = {}
-	P.trail:clear()
+	P.stopped, P.spell = nil, {}
 	local invocation = P:inHand(shape)
-	if invocation then P:cast(invocation) end
+	if invocation then
+		P:cast(invocation)
+		P.trail:flash()
+	else
+		P.trail:clear()
+	end
 end
 
 function Player.update(P, dt, dir)
-	P.trail:update(dt, P:center())
+	-- All cards used, wait to shuffle deck and re-deal.
+	if cooldown(P, 'shuffleDelay', dt) then
+		P.deck, P.discards = P.discards, P.deck
+		shuffle(P.deck)
+		P:fillHand()
+	end
+	-- Coasted to a halt, wait to clear spell.
+	if cooldown(P, 'stopped', dt) then
+		P.spell = {}
+		P.trail:clear()
+	end
+	-- Particle trail.
+	if dir == 0 or P.speed == 0 then P.trail:update(dt)
+	else P.trail:update(dt, P:center()) end
+	-- Player proper.
 	if dir == 0 then
 		P.speed = 0
 		local short, long = P:limits()
@@ -191,6 +231,7 @@ function Player.update(P, dt, dir)
 		P:stretch(-(long - square)/P.tAccel * dt)
 		P:maybeCast(P:center())
 	elseif type(dir) == 'number' and dir ~= P.ignoreDir then
+		P.stopped = nil
 		if dir ~= P.dir then P:turnTo(dir) end
 		if dir ~= P.lastDir then
 			P.lastDir = dir
@@ -204,9 +245,8 @@ function Player.update(P, dt, dir)
 		P:move(P.speed * dt)
 		P:decayShape(dt, dir)
 		P.speed = max(0, P.speed - (P.maxSpeed/P.tDecay) * dt)
-		if P.speed == 0 then
-			P.spell = {}
-			P.trail:clear()
+		if P.speed == 0 and not P.stopped then
+			P.stopped = 0.3
 		end
 	end
 
@@ -222,11 +262,6 @@ function Player.draw(P)
 	love.graphics.line(P:side(P.dir))
 
 	P.trail:draw()
-
-	if P.spellShape then
-		love.graphics.setColor(1, 1, 1)
-		love.graphics.line(P.spellShape)
-	end
 end
 
 return Player

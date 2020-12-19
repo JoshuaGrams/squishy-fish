@@ -19,11 +19,11 @@ end
 
 function love.update(dt)
 	local d
-	if love.keyboard.isScancodeDown('space') then d = 0
-	elseif love.keyboard.isScancodeDown('right') then d = 1
-	elseif love.keyboard.isScancodeDown('down') then d = 2
-	elseif love.keyboard.isScancodeDown('left') then d = 3
-	elseif love.keyboard.isScancodeDown('up') then d = 4
+	if love.keyboard.isScancodeDown('space', 'lshift', 'rshift') then d = 0
+	elseif love.keyboard.isScancodeDown('right', 'd') then d = 1
+	elseif love.keyboard.isScancodeDown('down', 's') then d = 2
+	elseif love.keyboard.isScancodeDown('left', 'a') then d = 3
+	elseif love.keyboard.isScancodeDown('up', 'w') then d = 4
 	end
 	player:update(dt, d)
 end
