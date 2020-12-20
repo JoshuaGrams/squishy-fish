@@ -5,15 +5,20 @@ local min, max = math.min, math.max
 
 local Spell = Object:extend()
 
-function Spell.set(S, shape, fn)
+function Spell.set(S, shape, fn, castPoint)
 	S.shape = {unpack(shape)}
 	S.fn = fn
+	-- Default spell origin is end of the first segment.
+	S.o = S.castPoint or 1
 end
 
 local turns = { F = 0, R = 1, B = 2, L = 3 }
 local dirs = { F = {1,0}, R = {0,1}, B = {-1,0}, L = {0,-1} }
 Spell.turns = turns
 
+-- path is { finish={x,y}, {turn=<int 0..3>,length=<float>,p={x,y}}, ... }
+-- First turn is casting direction, rest are relative to that.
+-- Returns table with dir, origin, and any keys the spell specifies.
 function Spell.match(S, path)
 	local len = ceil(#S.shape/2)
 	if #path ~= len then return false end
@@ -27,8 +32,10 @@ function Spell.match(S, path)
 			-- Turns must match the spell
 			return false
 		end
+		if i == S.o+1 then args.origin = {unpack(edge.p)} end
 		args[key] = max(args[key] or 0, edge.length)
 	end
+	if S.o == #path then args.origin = {unpack(path.finish)} end
 	return args
 end
 

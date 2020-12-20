@@ -1,5 +1,11 @@
+local Actor = require 'actor'
 local Player = require 'player'
 local Spell = require 'spell'
+
+local TURN = 2*math.pi
+local sqrt = math.sqrt
+local min, max = math.min, math.max
+local cos, sin = math.cos, math.sin
 
 local function generateSeedFromClock()
 	local seed = os.time() + math.floor(1000*os.clock())
@@ -15,20 +21,35 @@ function love.load()
 	header = love.graphics.newFont('assets/Lora-Regular.ttf', 48)
 	love.graphics.setFont(header)
 
-	shell = love.graphics.newImage('assets/shell.png')
-	coral = love.graphics.newImage('assets/coral.png')
+	I = {
+		shell = love.graphics.newImage('assets/shell.png'),
+		coral = love.graphics.newImage('assets/coral.png'),
+		energy = love.graphics.newImage('assets/energy.png')
+	}
 
 	local w, h = love.graphics.getDimensions()
 	player = Player(w/2, h/2, 135, 18)
 	table.insert(player.hand, Spell(
 		{'l', 'R', 'w', 'L', 'w'},
-		function(S, args) print('FRL', args.l, args.w) end
+		function(S, args)
+			local x, y = unpack(args.origin)
+			local w = max(20, min(5 + args.w/3, 60))
+			local speed = max(200, min(100+3*args.l, 800))
+			local bolt = Actor(x, y, speed/5, w, I.energy)
+			local th = TURN * (args.dir-1)/4
+			bolt.dir = args.dir
+			bolt.vx, bolt.vy = speed*cos(th), speed*sin(th)
+			bolt.lifetime = 7.5  -- seconds
+			table.insert(friends, bolt)
+		end
 	))
 
 	cx, cy = w/2, h/2
 
 	bgx, bgy = math.random(), math.random()
 	bgsz = math.random()
+
+	friends, enemies, curmudgeons = {}, {}, {}
 end
 
 function drawSpell(S, x, y, size, pad)
@@ -51,7 +72,7 @@ function drawScenery(x0, y0, x1, y1)
 			local b, c = math.floor(100*n%10), math.floor(1000*n%10)
 			local d = 10000*n%10
 			if a <= 6 then
-				local img = a<3 and shell or coral
+				local img = a<3 and I.shell or I.coral
 				love.graphics.draw(img, (x + b/20)*size, (y + c/20)*size,  0,  0.2+d/15)
 			end
 		end
@@ -69,6 +90,10 @@ function love.draw()
 	love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, w - 20, 'center')
 	player:draw()
 
+	for _,a in ipairs(friends) do a:draw() end
+	for _,a in ipairs(enemies) do a:draw() end
+	for _,a in ipairs(curmudgeons) do a:draw() end
+
 	love.graphics.origin()
 
 	love.graphics.setLineWidth(3)
@@ -77,7 +102,26 @@ function love.draw()
 	end
 end
 
+local function removeDead(lst)
+	local i, N = 1, #lst
+	local d = 0
+	for i=1,N do
+		if lst[i].dead then
+			d, lst[i] = d+1, nil
+		elseif d > 0 then
+			lst[i-d], lst[i] = lst[i], nil
+		end
+	end
+end
+
 function love.update(dt)
+	for _,a in ipairs(friends) do a:update(dt) end
+	for _,a in ipairs(enemies) do a:update(dt) end
+	for _,a in ipairs(curmudgeons) do a:update(dt) end
+	removeDead(friends)
+	removeDead(enemies)
+	removeDead(curmudgeons)
+
 	local d
 	if love.keyboard.isScancodeDown('space', 'lshift', 'rshift') then d = 0
 	elseif love.keyboard.isScancodeDown('right', 'd') then d = 1
