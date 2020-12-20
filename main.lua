@@ -1,7 +1,16 @@
 local Player = require 'player'
 local Spell = require 'spell'
 
+local function generateSeedFromClock()
+	local seed = os.time() + math.floor(1000*os.clock())
+	seed = seed * seed % 1000000
+	seed = seed * seed % 1000000
+	return seed
+end
+
 function love.load()
+	math.randomseed(generateSeedFromClock())
+
 	font = love.graphics.newFont('assets/Lora-Regular.ttf', 24)
 	header = love.graphics.newFont('assets/Lora-Regular.ttf', 48)
 	love.graphics.setFont(header)
