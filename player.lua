@@ -224,7 +224,7 @@ function Player.update(P, dt, dir)
 		P.speed = 0
 		local short, long = P:limits()
 		local square = sqrt(P.area)
-		P:stretch(-(long - square)/P.tAccel * dt)
+		P:stretch(-0.5*(long - square)/P.tAccel * dt)
 		P:maybeCast(P:center())
 	elseif type(dir) == 'number' and dir ~= P.ignoreDir then
 		P.stopped = nil
