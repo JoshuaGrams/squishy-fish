@@ -2,14 +2,16 @@ local Player = require 'player'
 local Spell = require 'spell'
 
 function love.load()
+	local w, h = love.graphics.getDimensions()
 	font = love.graphics.newFont('assets/Lora-Regular.ttf', 24)
 	header = love.graphics.newFont('assets/Lora-Regular.ttf', 48)
 	love.graphics.setFont(header)
-	player = Player(50, 50, 135, 18)
+	player = Player(w/2, h/2, 135, 18)
 	table.insert(player.hand, Spell(
 		{'l', 'R', 'w', 'L', 'w'},
 		function(S, args) print('FRL', args.l, args.w) end
 	))
+	cx, cy = w/2, h/2
 end
 
 function drawSpell(S, x, y, size, pad)
@@ -24,9 +26,14 @@ end
 
 function love.draw()
 	local w, h = love.graphics.getDimensions()
+	love.graphics.translate(w/2, h/2)
+	love.graphics.translate(-cx, -cy)
+
 	love.graphics.setColor(0.5, 1, 0.9)
 	love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, w - 20, 'center')
 	player:draw()
+
+	love.graphics.origin()
 
 	love.graphics.setLineWidth(3)
 	for i,spell in ipairs(player.hand) do
@@ -43,6 +50,17 @@ function love.update(dt)
 	elseif love.keyboard.isScancodeDown('up', 'w') then d = 4
 	end
 	player:update(dt, d)
+
+	-- Scroll the screen.
+	local px, py = player:center()
+	local dx, dy = px - cx, py - cy
+	if dx*dx + dy*dy > 1 then
+		local cf, ct = 0.95, 0.9  -- Converge to 95% in 0.9 seconds.
+		local k = 1 - (1 - cf)^(dt/ct)
+		dx, dy = k*dx, k*dy
+	end
+	cx, cy = cx + dx, cy + dy
+
 end
 
 function toggleFullscreen()

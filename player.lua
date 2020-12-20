@@ -12,7 +12,7 @@ function Player.set(P, x, y, w, h)
 	P.area, P.maxAspect = w*h, w/h
 	P.aspect = 1
 	w, h = P:size()
-	P.r = {x+w, y+h, x, y}  -- clockwise: right, bottom, left, top
+	P.r = {x+w/2, y+h/2, x-w/2, y-h/2}  -- clockwise: right, bottom, left, top
 	P.speed, P.maxSpeed = 0, 800
 	P.tAccel, P.tDecay = 0.15, 0.8
 	P.accel = 0
