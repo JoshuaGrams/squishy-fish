@@ -2,16 +2,24 @@ local Player = require 'player'
 local Spell = require 'spell'
 
 function love.load()
-	local w, h = love.graphics.getDimensions()
 	font = love.graphics.newFont('assets/Lora-Regular.ttf', 24)
 	header = love.graphics.newFont('assets/Lora-Regular.ttf', 48)
 	love.graphics.setFont(header)
+
+	shell = love.graphics.newImage('assets/shell.png')
+	coral = love.graphics.newImage('assets/coral.png')
+
+	local w, h = love.graphics.getDimensions()
 	player = Player(w/2, h/2, 135, 18)
 	table.insert(player.hand, Spell(
 		{'l', 'R', 'w', 'L', 'w'},
 		function(S, args) print('FRL', args.l, args.w) end
 	))
+
 	cx, cy = w/2, h/2
+
+	bgx, bgy = math.random(), math.random()
+	bgsz = math.random()
 end
 
 function drawSpell(S, x, y, size, pad)
@@ -24,10 +32,29 @@ function drawSpell(S, x, y, size, pad)
 	end
 end
 
+function drawScenery(x0, y0, x1, y1)
+	local size = 600
+	love.graphics.setColor(1, 1, 1, 0.5)
+	for x=math.floor(x0/size)-2,math.ceil(x1/size)+2 do
+		for y=math.floor(y0/size)-2, math.ceil(y1/size)+2 do
+			local n = love.math.noise(bgx + x*bgsz, bgy + y*bgsz)
+			local a = math.floor(10*n)
+			local b, c = math.floor(100*n%10), math.floor(1000*n%10)
+			local d = 10000*n%10
+			if a <= 6 then
+				local img = a<3 and shell or coral
+				love.graphics.draw(img, (x + b/20)*size, (y + c/20)*size,  0,  0.2+d/15)
+			end
+		end
+	end
+end
+
 function love.draw()
 	local w, h = love.graphics.getDimensions()
 	love.graphics.translate(w/2, h/2)
 	love.graphics.translate(-cx, -cy)
+
+	drawScenery(cx - w/2, cy - h/2, cx + w/2, cy + h/2)
 
 	love.graphics.setColor(0.5, 1, 0.9)
 	love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, w - 20, 'center')
