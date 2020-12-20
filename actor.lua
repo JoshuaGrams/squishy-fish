@@ -21,6 +21,13 @@ function Actor.size(S)
 	return S.r[1] - S.r[3], S.r[2] - S.r[4]
 end
 
+function Actor.setPos(S, x, y)
+	local x0, y0 = S:center()
+	local dx, dy = x - x0, y - y0
+	S.r[1], S.r[3] = S.r[1] + dx, S.r[3] + dy
+	S.r[2], S.r[4] = S.r[2] + dy, S.r[4] + dy
+end
+
 function Actor.overlaps(S, a)
 	local x, y = S:center()
 	local w, h = S:size()
@@ -33,12 +40,11 @@ function Actor.overlaps(S, a)
 	return not (hSep or wSep)
 end
 
-function Actor.update(S, dt)
-	S.rPrev = {unpack(S.r)}
+function Actor.update(S, dt, debug)
 	if S.vx and S.vy then
 		S.r[1], S.r[3] = S.r[1] + dt*S.vx, S.r[3] + dt*S.vx
 		S.r[2], S.r[4] = S.r[2] + dt*S.vy, S.r[4] + dt*S.vy
-		if abs(S.vx) > 0.1 and abs(S.vy) > 0.1 then
+		if abs(S.vx) > 0.1 or abs(S.vy) > 0.1 then
 			S.dir = 1 + floor(0.5 + atan2(S.vy, S.vx) / (TURN/4))
 			S.xScale = 1
 			if S.dir == 3 then S.dir, S.xScale = 1, -1 end

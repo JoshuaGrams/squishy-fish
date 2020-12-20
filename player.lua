@@ -19,6 +19,7 @@ function Player.set(P, x, y, w, h)
 	P.dir = 1
 	P.hand, P.deck, P.discards = { size = 3 }, {}, {}
 	P.path = {}
+	P.health = 8
 	local spot = love.graphics.newImage('assets/particle.png')
 	P.trail = Trail(spot, 1.8, {0.75, 0.25, 0.95})
 end
@@ -27,6 +28,25 @@ function Player.size(P)
 	local w = floor(0.5 + sqrt(P.area * P.aspect))
 	local h = floor(0.5 + P.area / w)
 	return w, h
+end
+
+function Player.setPos(S, x, y)
+	local x0, y0 = S:center()
+	local dx, dy = x - x0, y - y0
+	S.r[1], S.r[3] = S.r[1] + dx, S.r[3] + dy
+	S.r[2], S.r[4] = S.r[2] + dy, S.r[4] + dy
+end
+
+function Player.overlaps(S, a)
+	local x, y = S:center()
+	local w, h = S:size()
+	local ax, ay = a:center()
+	local aw, ah = a:size()
+	local dx, dy = ax - x, ay - y
+	local halfW, halfH = 0.5*(w+aw), 0.5*(h+ah)
+	local hSep = dx > halfW or dx < -halfW
+	local wSep = dy > halfH or dy < -halfH
+	return not (hSep or wSep)
 end
 
 -- returns short, long
@@ -170,6 +190,7 @@ function Player.inHand(P, path)
 		if args then
 			P:discard(i)
 			P:fillHand()
+			args.owner = P
 			return spell, args
 		end
 	end

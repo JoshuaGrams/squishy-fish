@@ -1,4 +1,6 @@
-local Actor = require 'actor'
+local Bolt = require 'bolt'
+local Effects = require 'effects'
+local Patroller = require 'patroller'
 local Player = require 'player'
 local Spell = require 'spell'
 
@@ -14,6 +16,11 @@ local function generateSeedFromClock()
 	return seed
 end
 
+function addTo(actor, group)
+	table.insert(group, actor)
+	actor.group = group
+end
+
 function love.load()
 	math.randomseed(generateSeedFromClock())
 
@@ -22,34 +29,34 @@ function love.load()
 	love.graphics.setFont(header)
 
 	I = {
+		halfHeart = love.graphics.newImage('assets/half-heart.png'),
+		fullHeart = love.graphics.newImage('assets/full-heart.png'),
 		shell = love.graphics.newImage('assets/shell.png'),
 		coral = love.graphics.newImage('assets/coral.png'),
-		energy = love.graphics.newImage('assets/energy.png')
+		energyPink = love.graphics.newImage('assets/energy-pink.png'),
+		energyGreen = love.graphics.newImage('assets/energy-green.png'),
+		greenBall = love.graphics.newImage('assets/green-ball.png'),
+		patroller = love.graphics.newImage('assets/patroller.png'),
+		mine = love.graphics.newImage('assets/mine.png')
 	}
 
 	local w, h = love.graphics.getDimensions()
 	player = Player(w/2, h/2, 135, 18)
-	table.insert(player.hand, Spell(
-		{'l', 'R', 'w', 'L', 'w'},
-		function(S, args)
-			local x, y = unpack(args.origin)
-			local w = max(20, min(5 + args.w/3, 60))
-			local speed = max(200, min(100+3*args.l, 800))
-			local bolt = Actor(x, y, speed/5, w, I.energy)
-			local th = TURN * (args.dir-1)/4
-			bolt.dir = args.dir
-			bolt.vx, bolt.vy = speed*cos(th), speed*sin(th)
-			bolt.lifetime = 7.5  -- seconds
-			table.insert(friends, bolt)
-		end
-	))
+	local bolt = Spell({'l', 'R','w', 'L','w'}, Bolt)
+	table.insert(player.hand, bolt)
 
 	cx, cy = w/2, h/2
 
 	bgx, bgy = math.random(), math.random()
 	bgsz = math.random()
 
-	friends, enemies, curmudgeons = {}, {}, {}
+	group = {
+		friends = {},
+		enemies = {},
+		curmudgeons = {}
+	}
+	addTo(player, group.friends)
+	addTo(Patroller(900, 900), group.enemies)
 end
 
 function drawSpell(S, x, y, size, pad)
@@ -88,17 +95,25 @@ function love.draw()
 
 	love.graphics.setColor(0.5, 1, 0.9)
 	love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, w - 20, 'center')
-	player:draw()
 
-	for _,a in ipairs(friends) do a:draw() end
-	for _,a in ipairs(enemies) do a:draw() end
-	for _,a in ipairs(curmudgeons) do a:draw() end
+	for _,a in ipairs(group.friends) do a:draw() end
+	for _,a in ipairs(group.enemies) do a:draw() end
+	for _,a in ipairs(group.curmudgeons) do a:draw() end
 
 	love.graphics.origin()
 
 	love.graphics.setLineWidth(3)
 	for i,spell in ipairs(player.hand) do
-		drawSpell(spell, 10 + (i-1)*55, 10, 50, 3)
+		drawSpell(spell, 10, 10 + (i-1)*55, 50, 3)
+	end
+
+	love.graphics.setColor(1,1,1)
+	local health = 0
+	while health < player.health do
+		local img = player.health - health < 1 and I.halfHeart or I.fullHeart
+		local iw, ih = img:getDimensions()
+		love.graphics.draw(img, w-10, 10 + (health-1)*55,  0,  50/iw, 50/ih,  iw)
+		health = health + 1
 	end
 end
 
@@ -114,14 +129,18 @@ local function removeDead(lst)
 	end
 end
 
-function love.update(dt)
-	for _,a in ipairs(friends) do a:update(dt) end
-	for _,a in ipairs(enemies) do a:update(dt) end
-	for _,a in ipairs(curmudgeons) do a:update(dt) end
-	removeDead(friends)
-	removeDead(enemies)
-	removeDead(curmudgeons)
+local function collide(K, L)
+	for _,k in ipairs(K) do
+		for _,l in ipairs(L) do
+			if k:overlaps(l) then
+				if k.hit then k:hit(l) end
+				if l.hit then l:hit(k) end
+			end
+		end
+	end
+end
 
+function love.update(dt)
 	local d
 	if love.keyboard.isScancodeDown('space', 'lshift', 'rshift') then d = 0
 	elseif love.keyboard.isScancodeDown('right', 'd') then d = 1
@@ -129,7 +148,22 @@ function love.update(dt)
 	elseif love.keyboard.isScancodeDown('left', 'a') then d = 3
 	elseif love.keyboard.isScancodeDown('up', 'w') then d = 4
 	end
-	player:update(dt, d)
+
+	for _,g in pairs(group) do
+		for _,a in ipairs(g) do
+			if a == player then
+				a:update(dt, d)
+			else
+				a:update(dt)
+			end
+		end
+	end
+	for _,f in pairs(group) do
+		for _,g in pairs(group) do
+			if f ~= g then collide(f, g) end
+		end
+	end
+	for _,g in pairs(group) do removeDead(g) end
 
 	-- Scroll the screen.
 	local px, py = player:center()
@@ -140,7 +174,6 @@ function love.update(dt)
 		dx, dy = k*dx, k*dy
 	end
 	cx, cy = cx + dx, cy + dy
-
 end
 
 function toggleFullscreen()
