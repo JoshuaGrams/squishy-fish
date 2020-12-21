@@ -16,6 +16,7 @@ function Patroller.set(S, x, y)
 	Actor.set(S, x, y, 180, 74, I.patroller)
 	S.dirs = {1, 2, 3, 4}
 	S.dir = randomDirection(S.dirs)
+	S.hitScale = 0.75
 	S.health = 2
 	S.turnEvery, S.shootEvery = 3, 5
 	S.turnTime, S.shootTime = S.turnEvery, S.shootEvery
@@ -46,6 +47,7 @@ function Patroller.update(S, dt)
 			bullet.lifetime = 7.5
 			bullet.owner = S
 			bullet.hit = Effects.hurt
+			bullet.hitScale = 0.6
 			bullet.damage = 1.5
 			addTo(bullet, S.group)
 		end

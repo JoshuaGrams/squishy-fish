@@ -18,6 +18,7 @@ function Bolt(Spell, args)
 		bolt.lifetime = 7.5  -- seconds
 		bolt.owner = args.owner
 		bolt.hit = Spell.hit or Effects.hurt
+		bolt.hitScale = 0.8
 		addTo(bolt, bolt.owner.group)
 end
 
