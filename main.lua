@@ -112,7 +112,7 @@ function love.draw()
 	while health < player.health do
 		local img = player.health - health < 1 and I.halfHeart or I.fullHeart
 		local iw, ih = img:getDimensions()
-		love.graphics.draw(img, w-10, 10 + (health-1)*55,  0,  50/iw, 50/ih,  iw)
+		love.graphics.draw(img, w-10, 10 + health*55,  0,  50/iw, 50/ih,  iw, 0)
 		health = health + 1
 	end
 end

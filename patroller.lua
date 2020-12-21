@@ -17,18 +17,17 @@ function Patroller.set(S, x, y)
 	S.dirs = {1, 2, 3, 4}
 	S.dir = randomDirection(S.dirs)
 	S.health = 2
-	S.turnEvery = 3
-	S.turnTime = S.turnEvery
-	S.shootEvery, S.shootTime = 5, 0
+	S.turnEvery, S.shootEvery = 3, 5
+	S.turnTime, S.shootTime = S.turnEvery, S.shootEvery
 end
 
 function Patroller.update(S, dt)
 	if cooldown(S, 'turnTime', dt) then
+		S.turnTime = S.turnEvery
 		S.dir = randomDirection(S.dirs)
 		local speed = 150
 		local th = 2*math.pi * (S.dir-1)/4
 		S.vx, S.vy = speed*math.cos(th), speed*math.sin(th)
-		S.turnTime = S.turnEvery
 	end
 	Actor.update(S, dt, true)
 
