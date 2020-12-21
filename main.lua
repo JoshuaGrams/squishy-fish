@@ -59,6 +59,24 @@ function love.load()
 	addTo(Patroller(900, 900), group.enemies)
 end
 
+function nearestOpponent(a)
+	local nearest, bestDist2, bdx, bdy
+	for _,g in pairs(group) do
+		if g ~= a.group then
+			for _,b in ipairs(g) do
+				local ax, ay = a:center()
+				local bx, by = b:center()
+				local dx, dy = bx - ax, by - ay
+				local d2 = dx*dx + dy*dy
+				if not bestDist2 or d2 < bestDist2 then
+					nearest, bestDist2, bdx, bdy = b, d2, dx, dy
+				end
+			end
+		end
+	end
+	return nearest, bdx, bdy
+end
+
 function drawSpell(S, x, y, size, pad)
 	if S then
 		local r = size/2

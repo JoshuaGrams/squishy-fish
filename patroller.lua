@@ -32,14 +32,12 @@ function Patroller.update(S, dt)
 	end
 	Actor.update(S, dt, true)
 
-	local px, py = player:center()
-	local x, y = S:center()
-	local dx, dy = px - x, py - y
-	local near = 1000
-	local d2 = dx*dx + dy*dy
-	if d2 < near*near then
+	local opponent, dx, dy = nearestOpponent(S)
+	local near, d2 = 1000, dx*dx + dy*dy
+	if opponent and d2 < near*near then
 		if cooldown(S, 'shootTime', dt) then
 			S.shootTime = S.shootEvery
+			local x, y = S:center()
 			local bullet = Actor(x, y, 80, 80, I.greenBall)
 			local scale = 1 / math.sqrt(d2)
 			local speed = 400
