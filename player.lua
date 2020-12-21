@@ -1,7 +1,8 @@
+local Actor = require 'actor'
 local cooldown = require 'cooldown'
 local Trail = require 'trail'
-local Object = require 'base-class'
-local Player = Object:extend()
+
+local Player = Actor:extend()
 
 local sqrt = math.sqrt
 local abs, floor, ceil = math.abs, math.floor, math.ceil
@@ -30,32 +31,9 @@ function Player.size(P)
 	return w, h
 end
 
-function Player.setPos(S, x, y)
-	local x0, y0 = S:center()
-	local dx, dy = x - x0, y - y0
-	S.r[1], S.r[3] = S.r[1] + dx, S.r[3] + dy
-	S.r[2], S.r[4] = S.r[2] + dy, S.r[4] + dy
-end
-
-function Player.overlaps(S, a)
-	local x, y = S:center()
-	local w, h = S:size()
-	local ax, ay = a:center()
-	local aw, ah = a:size()
-	local dx, dy = ax - x, ay - y
-	local halfW, halfH = 0.5*(w+aw), 0.5*(h+ah)
-	local hSep = dx > halfW or dx < -halfW
-	local wSep = dy > halfH or dy < -halfH
-	return not (hSep or wSep)
-end
-
 -- returns short, long
 function Player.limits(P)
 	return sqrt(P.area/P.maxAspect), sqrt(P.area*P.maxAspect)
-end
-
-function Player.center(P)
-	return 0.5*(P.r[1]+P.r[3]), 0.5*(P.r[2]+P.r[4])
 end
 
 local adjacent = {2, 3, 4, 1}
