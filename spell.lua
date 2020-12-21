@@ -5,11 +5,10 @@ local min, max = math.min, math.max
 
 local Spell = Object:extend()
 
-function Spell.set(S, shape, fn, castPoint)
+function Spell.set(S, shape, fn)
 	S.shape = {unpack(shape)}
+	S.shape.origin = shape.origin or ceil(#shape/2)
 	S.fn = fn
-	-- Default spell origin is end of the first segment.
-	S.o = S.castPoint or 1
 end
 
 local turns = { F = 0, R = 1, B = 2, L = 3 }
@@ -32,10 +31,10 @@ function Spell.match(S, path)
 			-- Turns must match the spell
 			return false
 		end
-		if i == S.o+1 then args.origin = {unpack(edge.p)} end
+		if i == S.shape.origin+1 then args.origin = {unpack(edge.p)} end
 		args[key] = max(args[key] or 0, edge.length)
 	end
-	if S.o == #path then args.origin = {unpack(path.finish)} end
+	if S.shape.origin == #path then args.origin = {unpack(path.finish)} end
 	return args
 end
 
