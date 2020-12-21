@@ -43,6 +43,7 @@ function love.load()
 	local w, h = love.graphics.getDimensions()
 	player = Player(w/2, h/2, 135, 18)
 	local bolt = Spell({'l', 'R','w', 'L','w'}, Bolt)
+	bolt.bullet = true
 	table.insert(player.hand, bolt)
 
 	cx, cy = w/2, h/2
@@ -64,12 +65,14 @@ function nearestOpponent(a)
 	for _,g in pairs(group) do
 		if g ~= a.group then
 			for _,b in ipairs(g) do
-				local ax, ay = a:center()
-				local bx, by = b:center()
-				local dx, dy = bx - ax, by - ay
-				local d2 = dx*dx + dy*dy
-				if not bestDist2 or d2 < bestDist2 then
-					nearest, bestDist2, bdx, bdy = b, d2, dx, dy
+				if not b.bullet then
+					local ax, ay = a:center()
+					local bx, by = b:center()
+					local dx, dy = bx - ax, by - ay
+					local d2 = dx*dx + dy*dy
+					if not bestDist2 or d2 < bestDist2 then
+						nearest, bestDist2, bdx, bdy = b, d2, dx, dy
+					end
 				end
 			end
 		end

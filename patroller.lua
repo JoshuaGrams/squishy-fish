@@ -41,6 +41,7 @@ function Patroller.update(S, dt)
 			local bullet = Actor(x, y, 80, 80, I.greenBall)
 			local scale = 1 / math.sqrt(d2)
 			local speed = 400
+			bullet.bullet = true
 			bullet.vx, bullet.vy = dx*scale*speed, dy*scale*speed
 			bullet.lifetime = 7.5
 			bullet.owner = S
