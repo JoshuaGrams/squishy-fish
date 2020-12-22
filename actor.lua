@@ -59,10 +59,10 @@ function Actor.update(S, dt, debug)
 		end
 	end
 	if S.lifetime and cooldown(S, 'lifetime', dt) then
-		S.lifetime, S.dead = nil, true
+		S.lifetime, S.group = nil, nil
 	end
 	if S.health and S.health <= 0 then
-		S.dead = true
+		S.group = nil
 	end
 end
 

@@ -155,8 +155,10 @@ local function removeDead(lst)
 	local i, N = 1, #lst
 	local d = 0
 	for i=1,N do
-		if lst[i].dead then
+		local g = lst[i].group
+		if g ~= lst then
 			d, lst[i] = d+1, nil
+			if g then addTo(lst[i], g) end
 		elseif d > 0 then
 			lst[i-d], lst[i] = lst[i], nil
 		end
