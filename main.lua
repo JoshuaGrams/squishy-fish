@@ -1,5 +1,4 @@
 local Bolt = require 'bolt'
-local TailBolt = require 'tail-bolt'
 local Effects = require 'effects'
 local MiniMap = require 'minimap'
 local Patroller = require 'patroller'
@@ -45,8 +44,13 @@ function love.load()
 
 	local w, h = love.graphics.getDimensions()
 	player = Player(w/2, h/2, 135, 18)
-	table.insert(player.hand, Spell({'l', 'R','w', 'L','w'}, Bolt))
-	table.insert(player.hand, Spell({'l', 'L','w', 'R','w'}, TailBolt))
+	spells = {
+		bolt = Spell({'l', 'R','w', 'L','w'}, Bolt),
+		tailBolt = Spell({'l', 'L','w', 'R','w'}, Bolt, {reverse = true})
+	}
+	table.insert(player.deck, spells.bolt)
+	table.insert(player.deck, spells.tailBolt)
+	player:fillHand()
 
 	cx, cy = w/2, h/2
 

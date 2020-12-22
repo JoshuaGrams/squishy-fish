@@ -5,10 +5,11 @@ local min, max = math.min, math.max
 
 local Spell = Object:extend()
 
-function Spell.set(S, shape, fn)
+function Spell.set(S, shape, fn, options)
 	S.shape = {unpack(shape)}
 	S.shape.origin = shape.origin or ceil(#shape/2)
 	S.fn = fn
+	for k,v in pairs(options or {}) do S[k] = v end
 end
 
 local turns = { F = 0, R = 1, B = 2, L = 3 }

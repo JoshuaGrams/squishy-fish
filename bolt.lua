@@ -13,8 +13,12 @@ function Bolt(Spell, args)
 		local bolt = Actor(x, y, speed/5, w, I[Spell.imgName or 'energyPink'])
 		bolt.damage = floor(0.5 + (w - 20)/10)
 		bolt.bullet = true
-		local th = TURN * (args.dir-1)/4
-		bolt.dir = args.dir
+		if Spell.reverse then
+			bolt.dir = 1 + (1 + args.dir) % 4
+		else
+			bolt.dir = args.dir
+		end
+		local th = TURN * (bolt.dir-1)/4
 		bolt.vx, bolt.vy = speed*cos(th), speed*sin(th)
 		bolt.lifetime = 7.5  -- seconds
 		bolt.owner = args.owner
