@@ -156,7 +156,7 @@ local function shuffle(t)
 	local i = #t
 	while i > 1 do
 		i = i - 1
-		local j = floor(Math.random(i))
+		local j = floor(math.random(i))
 		t[i], t[j] = t[j], t[i]
 	end
 	return t
