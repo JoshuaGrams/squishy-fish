@@ -12,6 +12,7 @@ function Bolt(Spell, args)
 		local speed = max(200, min(100+3*args.l, 800))
 		local bolt = Actor(x, y, speed/5, w, I[Spell.imgName or 'energyPink'])
 		bolt.damage = floor(0.5 + (w - 20)/10)
+		bolt.bullet = true
 		local th = TURN * (args.dir-1)/4
 		bolt.dir = args.dir
 		bolt.vx, bolt.vy = speed*cos(th), speed*sin(th)

@@ -44,7 +44,6 @@ function love.load()
 	local w, h = love.graphics.getDimensions()
 	player = Player(w/2, h/2, 135, 18)
 	local bolt = Spell({'l', 'R','w', 'L','w'}, Bolt)
-	bolt.bullet = true
 	table.insert(player.hand, bolt)
 
 	cx, cy = w/2, h/2
