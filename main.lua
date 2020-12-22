@@ -28,6 +28,7 @@ function love.load()
 	font = love.graphics.newFont('assets/Lora-Regular.ttf', 24)
 	header = love.graphics.newFont('assets/Lora-Regular.ttf', 48)
 	love.graphics.setFont(header)
+	title = true
 
 	I = {
 		halfHeart = love.graphics.newImage('assets/half-heart.png'),
@@ -114,8 +115,10 @@ function love.draw()
 
 	drawScenery(cx - w/2, cy - h/2, cx + w/2, cy + h/2)
 
-	love.graphics.setColor(0.5, 1, 0.9)
-	love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, w - 20, 'center')
+	if title then
+		love.graphics.setColor(0.5, 1, 0.9)
+		love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, w - 20, 'center')
+	end
 
 	for _,a in ipairs(group.friends) do a:draw() end
 	for _,a in ipairs(group.enemies) do a:draw() end
@@ -200,6 +203,11 @@ function love.update(dt)
 		dx, dy = k*dx, k*dy
 	end
 	cx, cy = cx + dx, cy + dy
+
+	local w, h = love.graphics.getDimensions()
+	if title and (cx - w/2 > w-10 or cx + w/2 < 10 or cy - h/2 > 10 + 48 or cy + h/2 < 10) then
+		title = nil
+	end
 end
 
 function toggleFullscreen()
