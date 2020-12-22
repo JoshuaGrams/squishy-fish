@@ -1,5 +1,6 @@
 local Bolt = require 'bolt'
 local Effects = require 'effects'
+local MiniMap = require 'minimap'
 local Patroller = require 'patroller'
 local Player = require 'player'
 local Spell = require 'spell'
@@ -136,6 +137,11 @@ function love.draw()
 		love.graphics.draw(img, w-10, 10 + health*55,  0,  50/iw, 50/ih,  iw, 0)
 		health = health + 1
 	end
+
+	local mR = 0.5*math.max(w, h) * 4
+	local mr = math.min(w, h) / 6
+	local mx, my = w - 1.1*mr, h - 1.1*mr
+	MiniMap(mx, my, mr, mR)
 end
 
 local function removeDead(lst)
