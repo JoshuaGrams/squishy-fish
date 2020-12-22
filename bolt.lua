@@ -2,7 +2,7 @@ local Actor = require 'actor'
 local Effects = require 'effects'
 
 local min, max = math.min, math.max
-local floor = math.floor
+local ceil = math.ceil
 local cos, sin = math.cos, math.sin
 local TURN = 2*math.pi
 
@@ -11,7 +11,8 @@ function Bolt(Spell, args)
 		local w = max(20, min(5 + args.w/3, 60))
 		local speed = max(200, min(100+3*args.l, 800))
 		local bolt = Actor(x, y, speed/5, w, I[Spell.imgName or 'energyPink'])
-		bolt.damage = floor(0.5 + (w - 20)/10)
+		bolt.damage = ceil(0.5 + (w - 19)/10)
+		print(bolt.damage)
 		bolt.bullet = true
 		if Spell.reverse then
 			bolt.dir = 1 + (1 + args.dir) % 4
