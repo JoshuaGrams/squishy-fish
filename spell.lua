@@ -93,6 +93,7 @@ function Spell.draw(S, x, y, size)
 	local coords = scale(p, sc)
 	love.graphics.push()
 	love.graphics.translate(x - sc*(x0 + w/2), y - sc*(y0 + h/2))
+	love.graphics.polygon('fill', coords[1], coords[2]-4, coords[1]+7, coords[2], coords[1], coords[2]+4)
 	love.graphics.line(coords)
 	love.graphics.pop()
 end
