@@ -15,8 +15,7 @@ local function drawGroup(group, x, y, r, R)
 end
 
 function MiniMap(x, y, r, R)
-	local w, h = love.graphics.getDimensions()
-	w, h = w*r/R, h*r/R
+	local w, h = vw*r/R, vh*r/R
 	love.graphics.setColor(0.5, 0.5, 0.5, 0.3)
 	love.graphics.circle('fill', x, y, r)
 	love.graphics.rectangle('fill', x - w/2, y - h/2, w, h)

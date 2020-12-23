@@ -42,7 +42,10 @@ function love.load()
 		mine = love.graphics.newImage('assets/mine.png')
 	}
 
-	local w, h = love.graphics.getDimensions()
+	w, h = love.graphics.getDimensions()
+	cx, cy, vScale = w/2, h/2, 0.65
+	vw, vh = w/vScale, h/vScale
+
 	player = Player(w/2, h/2, 135, 18)
 	spells = {
 		bolt = Spell({'l', 'R','w'}, Bolt),
@@ -57,8 +60,6 @@ function love.load()
 	table.insert(player.deck, spells.tailBolt)
 	table.insert(player.deck, spells.swap)
 	player:fillHand()
-
-	cx, cy = w/2, h/2
 
 	bgx, bgy = math.random(), math.random()
 	bgsz = math.random()
@@ -121,15 +122,17 @@ function drawScenery(x0, y0, x1, y1)
 end
 
 function love.draw()
-	local w, h = love.graphics.getDimensions()
+	w, h = love.graphics.getDimensions()
+	vw, vh = w / vScale, h / vScale
 	love.graphics.translate(w/2, h/2)
+	love.graphics.scale(vScale)
 	love.graphics.translate(-cx, -cy)
 
 	drawScenery(cx - w/2, cy - h/2, cx + w/2, cy + h/2)
 
 	if title then
 		love.graphics.setColor(0.5, 1, 0.9)
-		love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, w - 20, 'center')
+		love.graphics.printf('Squishy Fish and the Magic Doubloons', 10, 10, vw - 20, 'center')
 	end
 
 	for _,a in ipairs(group.friends) do a:draw() end
@@ -152,7 +155,7 @@ function love.draw()
 		health = health + 1
 	end
 
-	local mR = 0.5*math.max(w, h) * 4
+	local mR = 0.5*math.max(vw, vh) * 4
 	local mr = math.min(w, h) / 6
 	local mx, my = w - 1.1*mr, h - 1.1*mr
 	MiniMap(mx, my, mr, mR)
@@ -218,8 +221,7 @@ function love.update(dt)
 	end
 	cx, cy = cx + dx, cy + dy
 
-	local w, h = love.graphics.getDimensions()
-	if title and (cx - w/2 > w-10 or cx + w/2 < 10 or cy - h/2 > 10 + 48 or cy + h/2 < 10) then
+	if title and (cx - vw/2 > vw-10 or cx + vw/2 < 10 or cy - vh/2 > 10 + 48 or cy + vh/2 < 10) then
 		title = nil
 	end
 end
