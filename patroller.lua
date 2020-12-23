@@ -12,6 +12,16 @@ local function randomDirection(dirs)
 	return dir
 end
 
+local function directionTo(a, b)
+	if not b then return end
+	local ax, ay = a:center()
+	local bx, by = b:center()
+	local dx, dy = bx - ax, by - ay
+	if math.abs(dy) > math.abs(dx) then dx = 0 else dy = 0 end
+	local dir = 1 + math.floor(0.5 + math.atan2(dy, dx) / (math.pi/2)) % 4
+	return dir
+end
+
 function Patroller.set(S, x, y)
 	Actor.set(S, x, y, 180, 74, I.patroller)
 	S.dirs = {1, 2, 3, 4}
@@ -25,21 +35,22 @@ end
 function Patroller.update(S, dt)
 	if cooldown(S, 'turnTime', dt) then
 		S.turnTime = S.turnEvery
-		S.dir = randomDirection(S.dirs)
+		S.dir = math.random() < 0.5 and directionTo(S, nearest(S))
+		if not S.dir then S.dir = randomDirection(S.dirs) end
 		local speed = 150
 		local th = 2*math.pi * (S.dir-1)/4
 		S.vx, S.vy = speed*math.cos(th), speed*math.sin(th)
 	end
 	Actor.update(S, dt, true)
 
-	local opponent, dx, dy = nearestOpponent(S)
-	local near, d2 = 1000, dx*dx + dy*dy
-	if opponent and d2 < near*near then
+	local opponent, dx, dy = nearest(S, false)
+	local near= 1000
+	if opponent and dx*dx + dy*dy < near*near then
 		if cooldown(S, 'shootTime', dt) then
 			S.shootTime = S.shootEvery
 			local x, y = S:center()
 			local bullet = Actor(x, y, 80, 80, I.greenBall)
-			local scale = 1 / math.sqrt(d2)
+			local scale = 1 / math.sqrt(dx*dx + dy*dy)
 			local speed = 400
 			bullet.bullet = true
 			bullet.vx, bullet.vy = dx*scale*speed, dy*scale*speed

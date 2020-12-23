@@ -32,7 +32,7 @@ end
 function Actor.setPos(S, x, y)
 	local x0, y0 = S:center()
 	local dx, dy = x - x0, y - y0
-	S.r[1], S.r[3] = S.r[1] + dx, S.r[3] + dy
+	S.r[1], S.r[3] = S.r[1] + dx, S.r[3] + dx
 	S.r[2], S.r[4] = S.r[2] + dy, S.r[4] + dy
 end
 

@@ -46,10 +46,16 @@ function love.load()
 	player = Player(w/2, h/2, 135, 18)
 	spells = {
 		bolt = Spell({'l', 'R','w', 'L','w'}, Bolt),
-		tailBolt = Spell({'l', 'L','w', 'R','w'}, Bolt, {reverse = true})
+		tailBolt = Spell({'l', 'L','w', 'R','w'}, Bolt, {reverse = true}),
+		push = Spell({'l', 'R','w', 'B','l'}, Bolt, {hit = Effects.push}),
+		pull = Spell({'l', 'L','w', 'B','l'}, Bolt, {hit = Effects.push, invert = true}),
+		swap = Spell({'l', 'R','w', 'F','l'}, Bolt, {hit = Effects.swap}),
+		convert = Spell({'l', 'B','l', 'F','l'}, Bolt, {hit = Effects.convert}),
 	}
 	table.insert(player.deck, spells.bolt)
+	table.insert(player.deck, spells.bolt)
 	table.insert(player.deck, spells.tailBolt)
+	table.insert(player.deck, spells.swap)
 	player:fillHand()
 
 	cx, cy = w/2, h/2
@@ -66,12 +72,13 @@ function love.load()
 	addTo(Patroller(900, 900), group.enemies)
 end
 
-function nearestOpponent(a)
+function nearest(a, friend)
+	friend = not not friend  -- convert to boolean
 	local nearest, bestDist2, bdx, bdy
 	for _,g in pairs(group) do
-		if g ~= a.group then
+		if friend == nil or (g == a.group) == friend then
 			for _,b in ipairs(g) do
-				if not b.bullet then
+				if not b.bullet and a ~= b then
 					local ax, ay = a:center()
 					local bx, by = b:center()
 					local dx, dy = bx - ax, by - ay
@@ -157,8 +164,8 @@ local function removeDead(lst)
 	for i=1,N do
 		local g = lst[i].group
 		if g ~= lst then
-			d, lst[i] = d+1, nil
 			if g then addTo(lst[i], g) end
+			d, lst[i] = d+1, nil
 		elseif d > 0 then
 			lst[i-d], lst[i] = lst[i], nil
 		end

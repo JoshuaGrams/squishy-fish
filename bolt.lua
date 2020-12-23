@@ -6,10 +6,12 @@ local ceil = math.ceil
 local cos, sin = math.cos, math.sin
 local TURN = 2*math.pi
 
+-- Takes the following from the spell:
+-- imgName, inverse (flip damage), reverse (flip direction), hit
 function Bolt(Spell, args)
 		local x, y = unpack(args.origin)
-		local w = max(20, min(5 + args.w/3, 60))
-		local speed = max(200, min(100+3*args.l, 800))
+		local w = max(20, min(5 + (args.w or 0)/3, 60))
+		local speed = max(200, min(100+3*(args.l or 0), 800))
 		local bolt = Actor(x, y, speed/5, w, I[Spell.imgName or 'energyPink'])
 		bolt.damage = ceil(0.5 + (w - 19)/10)  -- 1 to 5
 		if Spell.inverse then
