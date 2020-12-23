@@ -1,8 +1,8 @@
 return {
 
 	hurt = function(bolt, actor)
-		bolt.group = nil
 		if actor.health then
+			bolt.group = nil
 			actor.health = actor.health - bolt.damage
 		end
 	end,
@@ -17,7 +17,7 @@ return {
 	push = function(bolt, actor)
 		bolt.group = nil
 		local vx, vy = bolt.vx, bolt.vy
-		local sc = 50*bolt.damage / math.sqrt(vx*vx + vy*vy)
+		local sc = 65*bolt.damage / math.sqrt(vx*vx + vy*vy)
 		actor.vx = actor.vx + sc*vx
 		actor.vy = actor.vy + sc*vy
 	end,
