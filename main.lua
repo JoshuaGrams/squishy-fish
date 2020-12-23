@@ -45,12 +45,12 @@ function love.load()
 	local w, h = love.graphics.getDimensions()
 	player = Player(w/2, h/2, 135, 18)
 	spells = {
-		bolt = Spell({'l', 'R','w', 'L','w'}, Bolt),
-		tailBolt = Spell({'l', 'L','w', 'R','w'}, Bolt, {reverse = true}),
+		bolt = Spell({'l', 'R','w'}, Bolt),
+		tailBolt = Spell({'l', 'L','w'}, Bolt, {reverse = true}),
 		push = Spell({'l', 'R','w', 'B','l'}, Bolt, {hit = Effects.push}),
 		pull = Spell({'l', 'L','w', 'B','l'}, Bolt, {hit = Effects.push, invert = true}),
 		swap = Spell({'l', 'R','w', 'F','l'}, Bolt, {hit = Effects.swap}),
-		convert = Spell({'l', 'B','l', 'F','l'}, Bolt, {hit = Effects.convert}),
+		convert = Spell({'l', 'B','l'}, Bolt, {hit = Effects.convert}),
 	}
 	table.insert(player.deck, spells.bolt)
 	table.insert(player.deck, spells.bolt)
