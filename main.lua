@@ -49,7 +49,7 @@ function love.load()
 	player = Player(w/2, h/2, 135, 18)
 	spells = {
 		bolt = Spell({'l', 'R','w'}, Bolt),
-		tailBolt = Spell({'l', 'L','w'}, Bolt, {reverse = true}),
+		reverseBolt = Spell({'l', 'L','w'}, Bolt, {reverse = true}),
 		push = Spell({'l', 'R','w', 'B','l'}, Bolt, {hit = Effects.push}),
 		pull = Spell({'l', 'L','w', 'B','l'}, Bolt, {hit = Effects.push, invert = true}),
 		swap = Spell({'l', 'R','w', 'F','l'}, Bolt, {hit = Effects.swap}),
@@ -57,7 +57,7 @@ function love.load()
 	}
 	table.insert(player.deck, spells.bolt)
 	table.insert(player.deck, spells.bolt)
-	table.insert(player.deck, spells.tailBolt)
+	table.insert(player.deck, spells.reverseBolt)
 	table.insert(player.deck, spells.swap)
 	player:fillHand()
 
