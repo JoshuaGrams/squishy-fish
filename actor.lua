@@ -72,7 +72,7 @@ function Actor.draw(S)
 	local w, h = S:size()
 	local th = TURN * (S.dir - 1)/4
 	local iw, ih = S.img:getDimensions()
-	love.graphics.draw(S.img, x, y, th, w/iw*S.xScale, h/ih, w/2, h/2)
+	love.graphics.draw(S.img, x, y, th, w/iw*S.xScale, h/ih, iw/2, ih/2)
 end
 
 return Actor
