@@ -74,10 +74,9 @@ function love.load()
 end
 
 function nearest(a, friend)
-	friend = not not friend  -- convert to boolean
 	local nearest, bestDist2, bdx, bdy
 	for _,g in pairs(group) do
-		if friend == nil or (g == a.group) == friend then
+		if friend == nil or (g == a.group) == not not friend then
 			for _,b in ipairs(g) do
 				if not b.bullet and a ~= b then
 					local ax, ay = a:center()
