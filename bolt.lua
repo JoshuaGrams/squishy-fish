@@ -14,7 +14,7 @@ function Bolt(Spell, args)
 		local speed = max(200, min(100+3*(args.l or 0), 800))
 		local bolt = Actor(x, y, speed/5, w, I[Spell.imgName or 'energyPink'])
 		bolt.damage = ceil(0.5 + (w - 19)/10)  -- 1 to 5
-		if Spell.inverse then
+		if Spell.invert then
 			bolt.damage = -bolt.damage
 		end
 		bolt.bullet = true
