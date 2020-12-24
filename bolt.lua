@@ -2,18 +2,26 @@ local Actor = require 'actor'
 local Effects = require 'effects'
 
 local min, max = math.min, math.max
-local ceil = math.ceil
+local floor = math.floor
 local cos, sin = math.cos, math.sin
 local TURN = 2*math.pi
 
+local function roundTo(x, unit)
+	return floor(0.5 + x/unit) * unit
+end
+
+local function scaleTo(u, lo, hi)
+	return max(lo, min((u or 0)*hi, hi))
+end
+
 -- Takes the following from the spell:
--- imgName, inverse (flip damage), reverse (flip direction), hit
+-- imgName, invert (flip damage), reverse (flip direction), hit
 function Bolt(Spell, args)
 		local x, y = unpack(args.origin)
-		local w = max(20, min(5 + (args.w or 0)/3, 60))
-		local speed = max(200, min(100+3*(args.l or 0), 800))
+		local w = scaleTo(args.w, 20, 60)
+		local speed = scaleTo(args.l, 200, 800)
 		local bolt = Actor(x, y, speed/5, w, I[Spell.imgName or 'energyPink'])
-		bolt.damage = ceil(0.5 + (w - 19)/10)  -- 1 to 5
+		bolt.damage = roundTo(scaleTo(args.w, 0.5, 5), 0.5)
 		if Spell.invert then
 			bolt.damage = -bolt.damage
 		end

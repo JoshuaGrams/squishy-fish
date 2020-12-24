@@ -23,6 +23,11 @@ function Player.set(P, x, y, w, h)
 	P.health = 8
 	local spot = love.graphics.newImage('assets/particle.png')
 	P.trail = Trail(spot, 1.8, {0.75, 0.25, 0.95})
+
+	P.longLeg = 0.5 * P.maxSpeed * (P.tAccel + P.tDecay)
+	local square, short, long = sqrt(P.area), P:limits()
+	local longestAccel = P.tAccel * (long-short)/(long-square)
+	P.longestLeg = 0.5 * P.maxSpeed * (longestAccel^2/P.tAccel + P.tDecay)
 end
 
 function Player.size(P)
@@ -164,7 +169,7 @@ end
 
 function Player.inHand(P, path)
 	for i,spell in ipairs(P.hand) do
-		local args = spell:match(path)
+		local args = spell:match(path, P.longestLeg)
 		if args then
 			P:discard(i)
 			P:fillHand()

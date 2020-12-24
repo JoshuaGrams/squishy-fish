@@ -2,6 +2,8 @@ local Object = require 'base-class'
 
 local ceil = math.ceil
 local min, max = math.min, math.max
+local function clamp(x, lo, hi) return max(lo, min(x, hi)) end
+
 
 local Spell = Object:extend()
 
@@ -19,7 +21,7 @@ Spell.turns = turns
 -- path is { finish={x,y}, {turn=<int 0..3>,length=<float>,p={x,y}}, ... }
 -- First turn is casting direction, rest are relative to that.
 -- Returns table with dir, origin, and any keys the spell specifies.
-function Spell.match(S, path)
+function Spell.match(S, path, maxEdgeLength)
 	local len = ceil(#S.shape/2)
 	if #path ~= len then return false end
 	local expected, args = S.shape, {}
@@ -33,7 +35,7 @@ function Spell.match(S, path)
 			return false
 		end
 		if i == S.shape.origin+1 then args.origin = {unpack(edge.p)} end
-		args[key] = max(args[key] or 0, edge.length)
+		args[key] = clamp(edge.length/maxEdgeLength, args[key] or 0, 1)
 	end
 	if S.shape.origin == #path then args.origin = {unpack(path.finish)} end
 	return args
