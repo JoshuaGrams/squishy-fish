@@ -48,7 +48,7 @@ function Actor.overlaps(a, b)
 	return not (hSep or wSep)
 end
 
-function Actor.update(S, dt, debug)
+function Actor.update(S, dt)
 	if S.vx and S.vy then
 		S.r[1], S.r[3] = S.r[1] + dt*S.vx, S.r[3] + dt*S.vx
 		S.r[2], S.r[4] = S.r[2] + dt*S.vy, S.r[4] + dt*S.vy

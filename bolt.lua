@@ -6,10 +6,6 @@ local floor = math.floor
 local cos, sin = math.cos, math.sin
 local TURN = 2*math.pi
 
-local function roundTo(x, unit)
-	return floor(0.5 + x/unit) * unit
-end
-
 local function scaleTo(u, lo, hi)
 	return max(lo, min(lo + (u or 0)*(hi-lo), hi))
 end

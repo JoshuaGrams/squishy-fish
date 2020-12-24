@@ -27,7 +27,7 @@ function Patroller.set(S, x, y)
 	S.dirs = {1, 2, 3, 4}
 	S.dir = randomDirection(S.dirs)
 	S.hitScale = 0.75
-	S.health = 2
+	S.health = 2.5
 	S.turnEvery, S.shootEvery = 3, 5
 	S.turnTime, S.shootTime = S.turnEvery, S.shootEvery
 end
@@ -49,7 +49,7 @@ function Patroller.update(S, dt)
 		local th = 2*math.pi * (S.dir-1)/4
 		S.vx, S.vy = speed*math.cos(th), speed*math.sin(th)
 	end
-	Actor.update(S, dt, true)
+	Actor.update(S, dt)
 
 	local opponent, dx, dy = nearest(S, false)
 	local near= 1000

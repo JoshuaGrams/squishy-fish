@@ -1,6 +1,7 @@
 local Bolt = require 'bolt'
 local cooldown = require 'cooldown'
 local Effects = require 'effects'
+local Mine = require 'mine'
 local MiniMap = require 'minimap'
 local Patroller = require 'patroller'
 local Player = require 'player'
@@ -23,6 +24,10 @@ function addTo(actor, group)
 	actor.group = group
 end
 
+function roundTo(x, unit)
+	return math.floor(0.5 + x/unit) * unit
+end
+
 function randomIn(lo, hi)
 	return lo + (hi-lo)*math.random()
 end
@@ -33,7 +38,8 @@ function spawnEnemies(count, x, y, R)
 		local r = randomIn(0.5*R, 0.8*R)
 		local th = TURN*math.random()
 		x, y = x + r*cos(th), y + r*sin(th)
-		addTo(Patroller(x, y), group.enemies)
+		local Enemy = math.random() < 0.5 and Patroller or Mine
+		addTo(Enemy(x, y), group.enemies)
 	end
 	return count
 end
@@ -93,13 +99,32 @@ function love.load()
 	spawnEnemies(enemyCount, w/2, h/2, mR)
 end
 
+function nearby(a, dist, friend)
+	local ax, ay = a:center()
+	local neighbors = {}
+	for _,g in pairs(group) do
+		if friend == nil or (g == a.group) == not not friend then
+			for _,b in ipairs(g) do
+				if a ~= b then
+					local bx, by = b:center()
+					local dx, dy = bx - ax, by - ay
+					if dx*dx + dy*dy <= dist*dist then
+						table.insert(neighbors, b)
+					end
+				end
+			end
+		end
+	end
+	return neighbors
+end
+
 function nearest(a, friend)
+	local ax, ay = a:center()
 	local nearest, bestDist2, bdx, bdy
 	for _,g in pairs(group) do
 		if friend == nil or (g == a.group) == not not friend then
 			for _,b in ipairs(g) do
 				if not b.bullet and a ~= b then
-					local ax, ay = a:center()
 					local bx, by = b:center()
 					local dx, dy = bx - ax, by - ay
 					local d2 = dx*dx + dy*dy
