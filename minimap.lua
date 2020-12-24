@@ -23,8 +23,6 @@ function MiniMap(x, y, r, R)
 	drawGroup(group.friends, x, y, r, R)
 	love.graphics.setColor(0.8, 0.3, 0.2, 0.5)
 	drawGroup(group.enemies, x, y, r, R)
-	love.graphics.setColor(0.9, 0.6, 0.2, 0.5)
-	drawGroup(group.curmudgeons, x, y, r, R)
 end
 
 return MiniMap

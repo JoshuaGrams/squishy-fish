@@ -1,4 +1,5 @@
 local Bolt = require 'bolt'
+local cooldown = require 'cooldown'
 local Effects = require 'effects'
 local MiniMap = require 'minimap'
 local Patroller = require 'patroller'
@@ -20,6 +21,21 @@ end
 function addTo(actor, group)
 	table.insert(group, actor)
 	actor.group = group
+end
+
+function randomIn(lo, hi)
+	return lo + (hi-lo)*math.random()
+end
+
+function spawnEnemies(count, x, y, R)
+	while count > 0 do
+		count = count - 1
+		local r = randomIn(0.5*R, 0.8*R)
+		local th = TURN*math.random()
+		x, y = x + r*cos(th), y + r*sin(th)
+		addTo(Patroller(x, y), group.enemies)
+	end
+	return count
 end
 
 function love.load()
@@ -45,6 +61,8 @@ function love.load()
 	w, h = love.graphics.getDimensions()
 	cx, cy, vScale = w/2, h/2, 0.65
 	vw, vh = w/vScale, h/vScale
+	mR = 0.5*math.max(vw, vh) * 4
+	mr = math.min(w, h) / 6
 
 	player = Player(w/2, h/2, 135, 18)
 	spells = {
@@ -66,11 +84,13 @@ function love.load()
 
 	group = {
 		friends = {},
-		enemies = {},
-		curmudgeons = {}
+		enemies = {}
 	}
 	addTo(player, group.friends)
-	addTo(Patroller(900, 900), group.enemies)
+
+	enemyCount = 3
+	spawn = { t = 15, every = 15 }
+	spawnEnemies(enemyCount, w/2, h/2, mR)
 end
 
 function nearest(a, friend)
@@ -136,7 +156,6 @@ function love.draw()
 
 	for _,a in ipairs(group.friends) do a:draw() end
 	for _,a in ipairs(group.enemies) do a:draw() end
-	for _,a in ipairs(group.curmudgeons) do a:draw() end
 
 	love.graphics.origin()
 
@@ -154,8 +173,8 @@ function love.draw()
 		health = health + 1
 	end
 
-	local mR = 0.5*math.max(vw, vh) * 4
-	local mr = math.min(w, h) / 6
+	mR = 0.5*math.max(vw, vh) * 4
+	mr = math.min(w, h) / 6
 	local mx, my = w - 1.1*mr, h - 1.1*mr
 	MiniMap(mx, my, mr, mR)
 end
@@ -166,7 +185,11 @@ local function removeDead(lst)
 	for i=1,N do
 		local g = lst[i].group
 		if g ~= lst then
-			if g then addTo(lst[i], g) end
+			if g then
+				addTo(lst[i], g)
+			elseif lst[i].health then
+				enemyCount = enemyCount + 1.5
+			end
 			d, lst[i] = d+1, nil
 		elseif d > 0 then
 			lst[i-d], lst[i] = lst[i], nil
@@ -209,6 +232,11 @@ function love.update(dt)
 		end
 	end
 	for _,g in pairs(group) do removeDead(g) end
+	if next(group.enemies) == nil or cooldown(spawn, 't', dt) then
+		spawn.t = spawn.every
+		local px, py = player:center()
+		enemyCount = spawnEnemies(enemyCount, px, py, mR)
+	end
 
 	-- Scroll the screen.
 	local px, py = player:center()
