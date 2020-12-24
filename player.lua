@@ -20,7 +20,8 @@ function Player.set(P, x, y, w, h)
 	P.dir = 1
 	P.hand, P.deck, P.discards = { size = 3 }, {}, {}
 	P.path = {}
-	P.health = 8
+	P.health = 4
+	P.maxHealth = 4
 	local spot = love.graphics.newImage('assets/particle.png')
 	P.trail = Trail(spot, 1.8, {0.75, 0.25, 0.95})
 
@@ -209,6 +210,11 @@ function Player.maybeCast(P, x, y)
 end
 
 function Player.update(P, dt, dir)
+	if P.health <= 0 then
+		P.group = nil
+		return
+	end
+
 	-- All cards used, wait to shuffle deck and re-deal.
 	if cooldown(P, 'shuffleDelay', dt) then
 		P.deck, P.discards = P.discards, P.deck

@@ -4,6 +4,7 @@ local Effects = require 'effects'
 local Mine = require 'mine'
 local MiniMap = require 'minimap'
 local Patroller = require 'patroller'
+local Pickup = require 'pickup'
 local Player = require 'player'
 local Spell = require 'spell'
 
@@ -37,9 +38,9 @@ function spawnEnemies(count, x, y, R)
 		count = count - 1
 		local r = randomIn(0.5*R, 0.8*R)
 		local th = TURN*math.random()
-		x, y = x + r*cos(th), y + r*sin(th)
+		local ex, ey = x + r*cos(th), y + r*sin(th)
 		local Enemy = math.random() < 0.5 and Patroller or Mine
-		addTo(Enemy(x, y), group.enemies)
+		addTo(Enemy(ex, ey), group.enemies)
 	end
 	return count
 end
@@ -53,6 +54,7 @@ function love.load()
 	title = true
 
 	I = {
+		coin = love.graphics.newImage('assets/coin.png'),
 		halfHeart = love.graphics.newImage('assets/half-heart.png'),
 		fullHeart = love.graphics.newImage('assets/full-heart.png'),
 		shell = love.graphics.newImage('assets/shell.png'),
@@ -72,17 +74,20 @@ function love.load()
 
 	player = Player(w/2, h/2, 135, 18)
 	spells = {
-		bolt = Spell({'l', 'R','w'}, Bolt),
-		reverseBolt = Spell({'l', 'L','w'}, Bolt, {reverse = true}),
-		push = Spell({'l', 'R','w', 'B','l'}, Bolt, {hit = Effects.push}),
-		pull = Spell({'l', 'L','w', 'B','l'}, Bolt, {hit = Effects.push, invert = true}),
-		swap = Spell({'l', 'R','w', 'F','l'}, Bolt, {hit = Effects.swap}),
-		convert = Spell({'l', 'B','l'}, Bolt, {hit = Effects.convert}),
+		bolt = Spell({'l', 'R','w'}, Bolt, { chance = 10 }),
+		reverseBolt = Spell({'l', 'L','w'}, Bolt, {reverse = true, chance = 7}),
+		push = Spell({'l', 'R','w', 'B','l'}, Bolt, {hit = Effects.push, chance = 5}),
+		pull = Spell({'l', 'L','w', 'B','l'}, Bolt, {hit = Effects.push, invert = true, chance = 5}),
+		swap = Spell({'l', 'R','w', 'F','l'}, Bolt, {hit = Effects.swap, chance = 5}),
+		convert = Spell({'l', 'B','l'}, Bolt, {hit = Effects.convert, chance = 2}),
 	}
+	spellChoices = {}
+	for _,s in pairs(spells) do
+		for i=1,s.chance do table.insert(spellChoices, s) end
+	end
 	table.insert(player.deck, spells.bolt)
 	table.insert(player.deck, spells.bolt)
 	table.insert(player.deck, spells.reverseBolt)
-	table.insert(player.deck, spells.swap)
 	player:fillHand()
 
 	bgx, bgy = math.random(), math.random()
@@ -92,6 +97,7 @@ function love.load()
 		friends = {},
 		enemies = {}
 	}
+	newSpawns = {}
 	addTo(player, group.friends)
 
 	enemyCount = 3
@@ -212,8 +218,11 @@ local function removeDead(lst)
 		if g ~= lst then
 			if g then
 				addTo(lst[i], g)
-			elseif lst[i].health then
+			elseif not (lst[i].bullet or lst[i] == player) then
 				enemyCount = enemyCount + 1.5
+				if math.random() < 0.4 then
+					table.insert(newSpawns, Pickup(lst[i]:center()))
+				end
 			end
 			d, lst[i] = d+1, nil
 		elseif d > 0 then
@@ -234,6 +243,16 @@ local function collide(K, L)
 end
 
 function love.update(dt)
+	if not player.group and not player.deadTime then
+		player.deadTime = 3
+	elseif cooldown(player, 'deadTime', dt) then
+		player.health = player.maxHealth
+		group.friends, group.enemies = {}, {}
+		enemyCount = 3
+		addTo(player, group.friends)
+		local px, py = player:center()
+		spawnEnemies(enemyCount, px, py, mR)
+	end
 	local d
 	if love.keyboard.isScancodeDown('space', 'lshift', 'rshift') then d = 0
 	elseif love.keyboard.isScancodeDown('right', 'd') then d = 1
@@ -242,12 +261,16 @@ function love.update(dt)
 	elseif love.keyboard.isScancodeDown('up', 'w') then d = 4
 	end
 
+	local px, py = player:center()
 	for _,g in pairs(group) do
 		for _,a in ipairs(g) do
 			if a == player then
 				a:update(dt, d)
 			else
 				a:update(dt)
+				local ax, ay = a:center()
+				local dx, dy = ax - px, ay - py
+				if dx*dx + dy*dy > 2*mR*mR then a.group = nil end
 			end
 		end
 	end
@@ -257,6 +280,8 @@ function love.update(dt)
 		end
 	end
 	for _,g in pairs(group) do removeDead(g) end
+	for _,a in ipairs(newSpawns) do addTo(a, group.enemies) end
+	newSpawns = {}
 	if next(group.enemies) == nil or cooldown(spawn, 't', dt) then
 		spawn.t = spawn.every
 		local px, py = player:center()
