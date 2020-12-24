@@ -11,7 +11,7 @@ local function roundTo(x, unit)
 end
 
 local function scaleTo(u, lo, hi)
-	return max(lo, min((u or 0)*hi, hi))
+	return max(lo, min(lo + (u or 0)*(hi-lo), hi))
 end
 
 -- Takes the following from the spell:
@@ -19,7 +19,7 @@ end
 function Bolt(Spell, args)
 		local x, y = unpack(args.origin)
 		local w = scaleTo(args.w, 20, 60)
-		local speed = scaleTo(args.l, 200, 800)
+		local speed = scaleTo(args.l, 400, 1500)
 		local bolt = Actor(x, y, speed/5, w, I[Spell.imgName or 'energyPink'])
 		bolt.damage = roundTo(scaleTo(args.w, 0.5, 5), 0.5)
 		if Spell.invert then
