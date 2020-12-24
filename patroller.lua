@@ -35,7 +35,15 @@ end
 function Patroller.update(S, dt)
 	if cooldown(S, 'turnTime', dt) then
 		S.turnTime = S.turnEvery
-		S.dir = math.random() < 0.5 and directionTo(S, nearest(S))
+		S.dir = nil
+		if math.random() < 0.5 then
+			local N, bdx, bdy = nearest(S)
+			if N then S.dir = directionTo(S, N) end
+			if bdx*bdx + bdy*bdy < 500*500 then
+				S.dir = S.dir + (math.random() < 0.5 and 1 or 3)
+				S.dir = 1 + (S.dir-1)%4
+			end
+		end
 		if not S.dir then S.dir = randomDirection(S.dirs) end
 		local speed = 150
 		local th = 2*math.pi * (S.dir-1)/4
