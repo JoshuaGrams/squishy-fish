@@ -18,8 +18,8 @@ return {
 		bolt.group = nil
 		local vx, vy = bolt.vx, bolt.vy
 		local sc = 65*bolt.damage / math.sqrt(vx*vx + vy*vy)
-		actor.vx = actor.vx + sc*vx
-		actor.vy = actor.vy + sc*vy
+		actor.vx = (actor.vx or 0) + sc*vx
+		actor.vy = (actor.vy or 0) + sc*vy
 	end,
 
 	convert = function(bolt, actor)
