@@ -17,7 +17,7 @@ return {
 	push = function(bolt, actor)
 		bolt.group = nil
 		local vx, vy = bolt.vx, bolt.vy
-		local sc = 65*bolt.damage / math.sqrt(vx*vx + vy*vy)
+		local sc = 100*bolt.damage / math.sqrt(vx*vx + vy*vy)
 		actor.vx = (actor.vx or 0) + sc*vx
 		actor.vy = (actor.vy or 0) + sc*vy
 	end,

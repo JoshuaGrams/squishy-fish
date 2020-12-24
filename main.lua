@@ -219,7 +219,7 @@ local function removeDead(lst)
 			if g then
 				addTo(lst[i], g)
 			elseif not (lst[i].bullet or lst[i] == player) then
-				enemyCount = enemyCount + 1.5
+				enemyCount = math.min(25 - #group.enemies, enemyCount + 1.5)
 				if math.random() < 0.4 then
 					table.insert(newSpawns, Pickup(lst[i]:center()))
 				end
@@ -244,6 +244,7 @@ end
 
 function love.update(dt)
 	if not player.group and not player.deadTime then
+		player.speed = 0
 		player.deadTime = 3
 	elseif cooldown(player, 'deadTime', dt) then
 		player.health = player.maxHealth
