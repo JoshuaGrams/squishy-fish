@@ -176,12 +176,12 @@ end
 
 local function collide(K, L)
 	for _,k in ipairs(K) do
-		for _,l in ipairs(L) do
-			if k:overlaps(l) then
+		if k.group then for _,l in ipairs(L) do
+			if l.group and k:overlaps(l) then
 				if k.hit then k:hit(l) end
 				if l.hit then l:hit(k) end
 			end
-		end
+		end end
 	end
 end
 
