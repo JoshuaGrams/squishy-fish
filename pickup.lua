@@ -4,7 +4,7 @@ local cooldown = require 'cooldown'
 local Pickup = Actor:extend()
 
 function Pickup.set(S, x, y)
-	local coin = math.random() < 0.1
+	local coin = math.random() < 0.3
 	Actor.set(S, x, y, 60, 60, coin and I.coin or I.fullHeart)
 	S.lifetime = 5
 	S.bullet = true

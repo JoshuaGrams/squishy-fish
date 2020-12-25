@@ -100,9 +100,8 @@ function love.load()
 	newSpawns = {}
 	addTo(player, group.friends)
 
-	enemyCount = 3
 	spawn = { t = 15, every = 15 }
-	spawnEnemies(enemyCount, w/2, h/2, mR)
+	enemyCount = spawnEnemies(3, w/2, h/2, mR)
 end
 
 function nearby(a, dist, friend)
@@ -219,7 +218,7 @@ local function removeDead(lst)
 			if g then
 				addTo(lst[i], g)
 			elseif not (lst[i].bullet or lst[i] == player) then
-				enemyCount = math.min(25 - #group.enemies, enemyCount + 1.5)
+				enemyCount = math.min(25 - #group.enemies, enemyCount + 1.35)
 				if math.random() < 0.4 then
 					table.insert(newSpawns, Pickup(lst[i]:center()))
 				end

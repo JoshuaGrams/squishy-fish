@@ -5,12 +5,12 @@ local Mine = Actor:extend()
 
 function Mine.set(S, x, y)
 	local rnd = math.random()
-	local sz = 40 + rnd*(100-40)
+	local sz = 75 + rnd*(180-75)
 	Actor.set(S, x, y, sz, sz, I.mine)
 	S.health = 4
-	S.R = 300 + rnd*(600-300)
+	S.R = 250 + rnd*(530-250)
 	S.damage = roundTo(randomIn(1.5, 3.5), 0.5)
-	S.fuseDelay = 1.3
+	S.fuseDelay = 1.5
 	S.scanEvery = 0.2
 	S.scanTime = S.scanEvery
 end
